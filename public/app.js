@@ -1,14 +1,21 @@
 const configuration = null;
-var peerConnection = new RTCPeerConnection(configuration, {
-    optional : [ {
-        RtpDataChannels : true
-    } ]
-});
-var dataChannel = peerConnection.createDataChannel("dataChannel", { reliable: true });
+var connection = new RTCPeerConnection(configuration);
 
-dataChannel.onerror = function(error) {
-    console.log("Error:", error);
-};
-dataChannel.onclose = function() {
-    console.log("Data channel is closed");
-};
+async function prepareOffer () {
+    const offer = await connection.createOffer();
+    await connection.setLocalDescription(offer);
+
+    return JSON.stringify(offer);
+}
+
+async function acceptRemoteOffer (offer) {
+    await connection.setRemoteDescription(offer);
+    const answer = await connection.createAnswer();
+    await connection.setLocalDescription(answer);
+
+    return JSON.stringify(answer);
+}
+
+async function sendRemoteAnswer (answer) {
+    await connection.setRemoteDescription(answer);
+}
